@@ -27,19 +27,11 @@ export interface IBuyer {
   address: string;
 }
 
-export interface IBuyerData {
+export type IBuyerData = Omit<IBuyer, "payment"> & {
   payment: TPayment | null;
-  email: string;
-  phone: string;
-  address: string;
-}
+};
 
-export interface IBuyerErrors {
-  payment?: string;
-  email?: string;
-  phone?: string;
-  address?: string;
-}
+export type IBuyerErrors = Partial<Record<keyof IBuyerData, string>>;
 
 export interface IProductResponse {
   total: number;
