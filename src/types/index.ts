@@ -27,6 +27,20 @@ export interface IBuyer {
   address: string;
 }
 
+export interface IBuyerData {
+  payment: TPayment | null;
+  email: string;
+  phone: string;
+  address: string;
+}
+
+export interface IBuyerErrors {
+  payment?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+}
+
 export interface IProductResponse {
   total: number;
   items: IProduct[];
