@@ -1,11 +1,11 @@
 import { IProduct } from "../../types";
 export class Products {
-  items: IProduct[];
-  curItem: IProduct | null;
+  private items: IProduct[];
+  private currentItem: IProduct | null;
 
   constructor() {
     this.items = [];
-    this.curItem = null;
+    this.currentItem = null;
   }
 
   setItems(items: IProduct[]): void {
@@ -22,10 +22,10 @@ export class Products {
   }
 
   setItem(item: IProduct): void {
-    this.curItem = item;
+    this.currentItem = item;
   }
 
-  getCurItem(): IProduct | null {
-    return this.curItem;
+  getCurrentItem(): IProduct | null {
+    return this.currentItem;
   }
 }

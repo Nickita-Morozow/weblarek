@@ -1,6 +1,6 @@
 import { IProduct } from "../../types";
 export class Basket {
-  basketItems: IProduct[];
+  private basketItems: IProduct[];
 
   constructor() {
     this.basketItems = [];

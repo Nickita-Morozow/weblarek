@@ -1,9 +1,9 @@
 import { TPayment, IBuyerData, IBuyerErrors } from "../../types";
 export class Buyer {
-  payment: TPayment | null;
-  address: string;
-  phone: string;
-  email: string;
+  private payment: TPayment | null;
+  private address: string;
+  private phone: string;
+  private email: string;
 
   constructor() {
     this.payment = null;

@@ -1,6 +1,6 @@
-import { IApi, IProductResponse, IOrder, IOrderResponse } from "../../types";
+import { IApi, IProductResponse, IOrder, IOrderResponse } from "../types";
 export class CommApi {
-  api: IApi;
+  private api: IApi;
 
   constructor(api: IApi) {
     this.api = api;

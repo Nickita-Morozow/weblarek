@@ -200,9 +200,9 @@ export interface IOrderResponse {
 
 Поля класса:
 
-`items: IProduct[]` — массив товаров каталога.
+`private items: IProduct[]` — массив товаров каталога.
 
-`curItem: IProduct | null` — товар, выбранный для подробного отображения. Если товар не выбран, хранит `null`.
+`private currentItem: IProduct | null` — товар, выбранный для подробного отображения. Если товар не выбран, хранит `null`.
 
 Методы класса:
 
@@ -214,7 +214,7 @@ export interface IOrderResponse {
 
 `setItem(item: IProduct): void` — метод принимает объект товара `item` типа `IProduct` и устанавливает его выбранным, ничего не возвращает.
 
-`getCurItem(): IProduct | null` — метод не принимает аргументов, возвращает объект выбранного товара `IProduct` либо `null`, если товар не выбран.
+`getCurrentItem(): IProduct | null` — метод не принимает аргументов, возвращает объект выбранного товара `IProduct` либо `null`, если товар не выбран.
 
 ### Класс `Basket`
 
@@ -224,7 +224,7 @@ export interface IOrderResponse {
 
 Поля класса:
 
-`basketItems: IProduct[]` — массив товаров в корзине.
+`private basketItems: IProduct[]` — массив товаров в корзине.
 
 Методы класса:
 
@@ -250,13 +250,13 @@ export interface IOrderResponse {
 
 Поля класса:
 
-`payment: TPayment | null` — выбранный способ оплаты. Если способ оплаты не выбран, хранит `null`.
+`private payment: TPayment | null` — выбранный способ оплаты. Если способ оплаты не выбран, хранит `null`.
 
-`address: string` — адрес доставки покупателя.
+`private address: string` — адрес доставки покупателя.
 
-`phone: string` — номер телефона покупателя.
+`private phone: string` — номер телефона покупателя.
 
-`email: string` — адрес электронной почты покупателя.
+`private email: string` — адрес электронной почты покупателя.
 
 Методы класса:
 
@@ -282,7 +282,7 @@ export interface IOrderResponse {
 
 Поля класса:
 
-`api: IApi` — объект для выполнения запросов к API магазина.
+`private api: IApi` — объект для выполнения запросов к API магазина.
 
 Методы класса:
 
