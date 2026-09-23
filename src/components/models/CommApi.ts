@@ -7,10 +7,10 @@ export class CommApi {
   }
 
   getProducts(): Promise<IProductResponse> {
-    return this.api.get<IProductResponse>("/product");
+    return this.api.get<IProductResponse>("/product/");
   }
 
   sendOrder(order: IOrder): Promise<IOrderResponse> {
-    return this.api.post<IOrderResponse>("/order", order);
+    return this.api.post<IOrderResponse>("/order/", order);
   }
 }
