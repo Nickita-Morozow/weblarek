@@ -196,7 +196,7 @@ export interface IOrderResponse {
 
 Класс `Products` отвечает за хранение данных каталога товаров и товара, выбранного для подробного отображения, а также предоставляет методы для работы с этими данными.
 
-Конструктор класса `Products` не принимает параметров. Инициализирует пустой каталог товаров и устанавливает значение выбранного товара в `null`.
+Конструктор `Products(events?: IEvents)` принимает необязательный брокер событий и инициализирует пустой каталог товаров и устанавливает значение выбранного товара в `null`.
 
 Поля класса:
 
@@ -220,7 +220,7 @@ export interface IOrderResponse {
 
 Класс `Basket` отвечает за хранение товаров, выбранных покупателем, и управление содержимым корзины.
 
-Конструктор класса `Basket` не принимает параметров. Инициализирует пустой массив товаров.
+Конструктор `Basket(events?: IEvents)` принимает необязательный брокер событий и инициализирует пустой массив товаров.
 
 Поля класса:
 
@@ -246,7 +246,7 @@ export interface IOrderResponse {
 
 Класс `Buyer` отвечает за хранение информации о покупателе и управление его данными.
 
-Конструктор класса `Buyer` не принимает аргументов, инициализирует данные покупателя: способ оплаты значением `null`, адрес, телефон и email — пустыми строками.
+Конструктор `Buyer(events?: IEvents)` принимает необязательный брокер событий и инициализирует данные покупателя: способ оплаты значением `null`, адрес, телефон и email — пустыми строками.
 
 Поля класса:
 
@@ -289,3 +289,83 @@ export interface IOrderResponse {
 `getProducts(): Promise<IProductResponse>` — метод не принимает аргументов, выполняет GET-запрос на эндпоинт `/product/` и возвращает `Promise<IProductResponse>` с данными каталога товаров.
 
 `sendOrder(order: IOrder): Promise<IOrderResponse>` — метод принимает объект заказа `order` типа `IOrder`, выполняет POST-запрос на эндпоинт `/order/` и возвращает `Promise<IOrderResponse>` с подтверждением покупки.
+
+## Вторая часть. Архитектура MVP
+
+Приложение использует MVP (Model–View–Presenter): модели содержат данные и методы изменения данных, представления управляют только собственными DOM-узлами и сообщают о действиях пользователя через обработчики, а `src/main.ts` координирует сервисы, модели и компоненты с помощью `EventEmitter`. Представления не вызывают API и не изменяют модели. `CommApi` делегирует HTTP-запросы общему классу `Api`.
+
+### Базовые средства и коммуникационный слой
+
+- `Component<T>(container: HTMLElement)` — абстрактная основа представлений. Поле `container: HTMLElement`; `render(data?: Partial<T>): HTMLElement` обновляет свойства и возвращает DOM-контейнер; `setImage(element: HTMLImageElement, src: string, alt?: string): void` обновляет изображение.
+- `EventEmitter()` — брокер событий, хранит `Map<EventName, Set<Subscriber>>`. `on<T>(event, callback): void` регистрирует подписчика; `off(event, callback): void` удаляет; `emit<T>(event, data?): void` публикует событие; `trigger<T>(event, context?)` создаёт генератор события; `onAll(callback)` слушает все события; `offAll()` удаляет все подписки.
+- `Api(baseUrl: string, options?: RequestInit)` — основной HTTP-клиент, методы `get<T>(uri: string): Promise<T>` и `post<T>(uri: string, data: object, method?): Promise<T>`.
+- `CommApi(api: IApi)` — адаптер серверного API: поле `api: IApi`; `getProducts(): Promise<IProductResponse>` запрашивает каталог, `sendOrder(order: IOrder): Promise<IOrderResponse>` отправляет заказ.
+
+### Модели данных
+
+Модели не содержат DOM-логики. Существующие методы первой части сохранены, при изменениях отправляются события через необязательную зависимость `events?: IEvents` в конструкторе.
+
+| Класс | Поля | Публичные методы |
+|---|---|---|
+| `Products(events?: IEvents)` | `items: IProduct[]`, `currentItem: IProduct \| null`, `events?: IEvents` | `setItems(items: IProduct[]): void`, `getItems(): IProduct[]`, `getItem(itemId: string): IProduct \| null`, `setItem(item: IProduct): void`, `getCurrentItem(): IProduct \| null` |
+| `Basket(events?: IEvents)` | `basketItems: IProduct[]`, `events?: IEvents` | `getItems(): IProduct[]`, `addToBasket(item: IProduct): void`, `removeFromBasket(item: IProduct): void`, `clearBasket(): void`, `getTotalPrice(): number`, `getItemsNumber(): number`, `isInBasket(itemId: string): boolean` |
+| `Buyer(events?: IEvents)` | `payment: TPayment \| null`, `address: string`, `phone: string`, `email: string`, `events?: IEvents` | `setData(data: Partial<IBuyerData>): void`, `getData(): IBuyerData`, `clearData(): void`, `validateData(): IBuyerErrors` |
+
+### Представления (View)
+
+Все классы находятся в `src/components/views`; все дополнительные типы данных представлений объявлены в `src/types/index.ts`. В конструкторе сохраняются DOM-ссылки на управляемые элементы; обработчики DOM-событий назначаются один раз. Предметные данные принимаются через `render()` и не хранятся в собственных полях View. Каждый callback, переданный в конструктор, публикует событие.
+
+| Класс, конструктор | Поля и методы |
+|---|---|
+| `Card<T>(container: HTMLElement)` — абстрактная карточка | `titleElement`, `priceElement: HTMLElement`; `categoryElement: HTMLElement \| null`; `imageElement: HTMLImageElement \| null`; `setProduct(product: IProduct): void` формирует общие поля карточки. |
+| `CatalogCard(container: HTMLElement, onSelect: () => void)` | Наследует поля `Card`; `render(data?: Partial<IProduct>): HTMLElement` заполняет карточку каталога. Click вызывает `onSelect`. |
+| `PreviewCard(container: HTMLElement, onAction: () => void)` | `actionButton: HTMLButtonElement`, `descriptionElement: HTMLElement`; `description: string` (setter); `render(data?: Partial<PreviewData>): HTMLElement` заполняет подробную карточку, кнопку и описание. |
+| `BasketCard(container: HTMLElement, onDelete: () => void)` | `indexElement: HTMLElement`, `deleteButton: HTMLButtonElement`; `render(data?: Partial<BasketCardData>): HTMLElement` заполняет позицию корзины. |
+| `Page(container: HTMLElement, onBasket: () => void)` | `galleryElement: HTMLElement`, `counterElement: HTMLElement`, `basketButton: HTMLButtonElement`; сеттеры `items: HTMLElement[]`, `counter: number` обновляют каталог и счётчик. |
+| `BasketView(container: HTMLElement, onOrder: () => void)` | `listElement`, `totalElement: HTMLElement`, `submitButton: HTMLButtonElement`; `render(data?: Partial<BasketData>): HTMLElement` обновляет список, сумму и доступность оформления. |
+| `Modal(container: HTMLElement)` | `contentElement: HTMLElement`, `closeButton: HTMLButtonElement`; сеттер `content: HTMLElement` вставляет компонент; `open(): void` добавляет `modal_active`, `close(): void` удаляет. |
+| `Form<T extends FormData>(container: HTMLFormElement, onSubmit: () => void, onChange: (field: string, value: string) => void)` — абстрактная форма | `submitButton: HTMLButtonElement`, `errorsElement: HTMLElement`, `inputs: HTMLInputElement[]`; `render(data?: Partial<T>): HTMLElement` показывает ошибки и блокирует кнопку; `setField(name: string, value: string): void` обновляет поле. |
+| `OrderForm(container: HTMLFormElement, onSubmit, onChange)` | `paymentButtons: HTMLButtonElement[]`; `render(data?: Partial<OrderFormData>): HTMLElement` отображает адрес и способ оплаты с `button_alt-active`. |
+| `ContactsForm(container: HTMLFormElement, onSubmit, onChange)` | Наследует поля `Form`; `render(data?: Partial<ContactsFormData>): HTMLElement` обновляет почту и телефон. |
+| `Success(container: HTMLElement, onClose: () => void)` | `descriptionElement: HTMLElement`, `closeButton: HTMLButtonElement`; `render(data?: Partial<SuccessData>): HTMLElement` показывает сумму успешной покупки. |
+
+#### Типы представлений (объявлены в `src/types/index.ts`)
+
+- `PreviewData = IProduct & { inBasket: boolean }` — товар и признак присутствия в корзине.
+- `BasketCardData = IProduct & { index: number }` — товар и номер строки корзины.
+- `BasketData = { items: HTMLElement[]; total: number }` — содержимое корзины и сумма.
+- `PageData = { items: HTMLElement[]; counter: number }` — карточки каталога и число товаров.
+- `FormData = { valid: boolean; errors: string[] }` — общая валидация формы.
+- `OrderFormData = FormData & { payment: TPayment | null; address: string }` — первый шаг оформления.
+- `ContactsFormData = FormData & { email: string; phone: string }` — второй шаг оформления.
+- `SuccessData = { total: number }` — результат заказа.
+
+Базовые типы `IProduct`, `TPayment`, `IBuyer`, `IBuyerData`, `IBuyerErrors`, `IOrder`, `IOrderResponse`, `IProductResponse` описаны в `src/types/index.ts` и не изменены.
+
+### События приложения
+
+| Событие | Источник | Назначение |
+|---|---|---|
+| `products:changed` | `Products.setItems` | Перерисовать каталог. |
+| `product:selected` | `Products.setItem` | Показать подробную карточку в модальном окне. |
+| `basket:changed` | `Basket.addToBasket/removeFromBasket/clearBasket` | Обновить счётчик и открытую корзину. |
+| `buyer:changed` | `Buyer.setData/clearData` | Обновить соответствующую форму, ошибки и доступность отправки. |
+| `catalog:select` `{ id: string }` | `CatalogCard` | Выбрать товар для просмотра. |
+| `product:action` | `PreviewCard` | Добавить товар или удалить его из корзины. |
+| `basket:open` | `Page` | Открыть корзину. |
+| `basket:remove` `{ id: string }` | `BasketCard` | Удалить товар из корзины. |
+| `order:open` | `BasketView` | Открыть первую форму заказа. |
+| `buyer:input` `{ field: string; value: string }` | `OrderForm`, `ContactsForm` | Передать ввод в модель покупателя. |
+| `order:next` | `OrderForm` | Проверить оплату и адрес и открыть контакты. |
+| `order:submit` | `ContactsForm` | Отправить заказ через коммуникационный слой. |
+
+### Презентер
+
+Презентер реализован в `src/main.ts` без отдельного класса (допустимый вариант для одностраничного приложения). Он создаёт экземпляры сервисов, моделей и представлений, регистрирует обработчики событий и подготавливает данные для компонентов. События создаются только моделями и через переданные в View обработчики, а не самим презентером. Запрос данных каталога выполняется при старте; отправка заказа — по `order:submit`. После успешного ответа сервера очищаются корзина и данные покупателя, отображается `Success`.
+
+### Проверка
+
+Корневым контейнером `Page` служит `.page__wrapper`: каталог `.gallery` и кнопка `.header__basket` находятся внутри него. Метод `items` изменяет только дочернюю галерею и не затрагивает шапку.
+
+
+Перед сдачей: установить зависимости `npm ci`, создать локальный `.env` по `.env.example`, выполнить `npm run build`, проверить каталог, корзину, оба этапа оформления, ответ API и закрытие модальных окон. Тестовый код из `main.ts` удалён.

@@ -47,3 +47,13 @@ export interface IOrderResponse {
   id: string;
   total: number;
 }
+
+// Типы данных слоя представления (View)
+export interface PageData { items: HTMLElement[]; counter: number }
+export interface BasketData { items: HTMLElement[]; total: number }
+export interface FormData { valid: boolean; errors: string[] }
+export interface OrderFormData extends FormData { payment: TPayment | null; address: string }
+export interface ContactsFormData extends FormData { email: string; phone: string }
+export interface SuccessData { total: number }
+export type PreviewData = IProduct & { inBasket: boolean };
+export type BasketCardData = IProduct & { index: number };
