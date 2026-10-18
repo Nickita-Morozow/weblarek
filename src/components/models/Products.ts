@@ -4,14 +4,14 @@ export class Products {
   private items: IProduct[];
   private currentItem: IProduct | null;
 
-  constructor(private events?: IEvents) {
+  constructor(private events: IEvents) {
     this.items = [];
     this.currentItem = null;
   }
 
   setItems(items: IProduct[]): void {
     this.items = items;
-    this.events?.emit("products:changed");
+    this.events.emit("products:changed");
   }
 
   getItems(): IProduct[] {
@@ -25,7 +25,7 @@ export class Products {
 
   setItem(item: IProduct): void {
     this.currentItem = item;
-    this.events?.emit("product:selected");
+    this.events.emit("product:selected");
   }
 
   getCurrentItem(): IProduct | null {

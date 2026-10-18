@@ -3,7 +3,7 @@ import { IProduct } from "../../types";
 export class Basket {
   private basketItems: IProduct[];
 
-  constructor(private events?: IEvents) {
+  constructor(private events: IEvents) {
     this.basketItems = [];
   }
 
@@ -13,7 +13,7 @@ export class Basket {
 
   addToBasket(item: IProduct): void {
     if (!this.isInBasket(item.id)) this.basketItems.push(item);
-    this.events?.emit("basket:changed");
+    this.events.emit("basket:changed");
   }
 
   removeFromBasket(item: IProduct): void {
@@ -21,12 +21,12 @@ export class Basket {
       (product) => product.id !== item.id,
     );
     this.basketItems = correctedBasket;
-    this.events?.emit("basket:changed");
+    this.events.emit("basket:changed");
   }
 
   clearBasket(): void {
     this.basketItems = [];
-    this.events?.emit("basket:changed");
+    this.events.emit("basket:changed");
   }
 
   getTotalPrice(): number {

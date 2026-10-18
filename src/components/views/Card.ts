@@ -1,32 +1,24 @@
-import { Component } from '../base/Component';
-import { IProduct } from '../../types';
-import { categoryMap, CDN_URL } from '../../utils/constants';
+import { Component } from "../base/Component";
+import { ensureElement } from "../../utils/utils";
 
 export abstract class Card<T> extends Component<T> {
-    protected titleElement: HTMLElement;
-    protected priceElement: HTMLElement;
-    protected categoryElement: HTMLElement | null;
-    protected imageElement: HTMLImageElement | null;
+  protected titleElement: HTMLElement;
+  protected priceElement: HTMLElement;
 
-    constructor(container: HTMLElement) {
-        super(container);
-        this.titleElement = container.querySelector('.card__title') as HTMLElement;
-        this.priceElement = container.querySelector('.card__price') as HTMLElement;
-        this.categoryElement = container.querySelector('.card__category');
-        this.imageElement = container.querySelector('.card__image');
-    }
+  constructor(container: HTMLElement) {
+    super(container);
 
-    protected setProduct(product: IProduct): void {
-        this.titleElement.textContent = product.title;
-        this.priceElement.textContent = product.price === null ? 'Бесценно' : `${product.price} синапсов`;
-        if (this.imageElement) {
-            this.setImage(this.imageElement, `${CDN_URL}${product.image}`, product.title);
-        }
-        if (this.categoryElement) {
-            Object.values(categoryMap).forEach(modifier => this.categoryElement?.classList.remove(modifier));
-            this.categoryElement.textContent = product.category;
-            const modifier = categoryMap[product.category as keyof typeof categoryMap];
-            if (modifier) this.categoryElement.classList.add(modifier);
-        }
-    }
+    this.titleElement = ensureElement<HTMLElement>(".card__title", container);
+
+    this.priceElement = ensureElement<HTMLElement>(".card__price", container);
+  }
+
+  set title(value: string) {
+    this.titleElement.textContent = value;
+  }
+
+  set price(value: number | null) {
+    this.priceElement.textContent =
+      value === null ? "Бесценно" : `${value} синапсов`;
+  }
 }

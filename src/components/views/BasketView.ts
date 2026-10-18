@@ -1,30 +1,42 @@
-import { BasketData } from '../../types';
-import { Component } from '../base/Component';
+import { BasketData } from "../../types";
+import { ensureElement } from "../../utils/utils";
+import { Component } from "../base/Component";
+import { IEvents } from "../base/Events";
 
 export class BasketView extends Component<BasketData> {
-    private listElement: HTMLElement;
-    private totalElement: HTMLElement;
-    private submitButton: HTMLButtonElement;
-    constructor(container: HTMLElement, onOrder: () => void) {
-        super(container);
-        this.listElement = container.querySelector('.basket__list') as HTMLElement;
-        this.totalElement = container.querySelector('.basket__price') as HTMLElement;
-        this.submitButton = container.querySelector('.basket__button') as HTMLButtonElement;
-        this.submitButton.addEventListener('click', onOrder);
-    }
-    render(data?: Partial<BasketData>): HTMLElement {
-        if (data) {
-            if (data.items) {
-                if (data.items.length) this.listElement.replaceChildren(...data.items);
-                else {
-                    const empty = document.createElement('li');
-                    empty.textContent = 'Корзина пуста';
-                    this.listElement.replaceChildren(empty);
-                }
-                this.submitButton.disabled = data.items.length === 0;
-            }
-            if (data.total !== undefined) this.totalElement.textContent = `${data.total} синапсов`;
-        }
-        return super.render();
-    }
+  private listElement: HTMLElement;
+  private totalElement: HTMLElement;
+  private submitButton: HTMLButtonElement;
+
+  constructor(
+    container: HTMLElement,
+    protected events: IEvents,
+  ) {
+    super(container);
+
+    this.listElement = ensureElement<HTMLElement>(".basket__list", container);
+
+    this.totalElement = ensureElement<HTMLElement>(".basket__price", container);
+
+    this.submitButton = ensureElement<HTMLButtonElement>(
+      ".basket__button",
+      container,
+    );
+
+    this.submitButton.addEventListener("click", () => {
+      this.events.emit("order:open");
+    });
+  }
+
+  set items(items: HTMLElement[]) {
+    this.listElement.replaceChildren(...items);
+  }
+
+  set total(total: number) {
+    this.totalElement.textContent = `${total} синапсов`;
+  }
+
+  set valid(valid: boolean) {
+    this.submitButton.disabled = !valid;
+  }
 }

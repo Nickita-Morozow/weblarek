@@ -6,7 +6,7 @@ export class Buyer {
   private phone: string;
   private email: string;
 
-  constructor(private events?: IEvents) {
+  constructor(private events: IEvents) {
     this.payment = null;
     this.address = this.phone = this.email = "";
   }
@@ -24,7 +24,7 @@ export class Buyer {
     if (data.payment !== undefined) {
       this.payment = data.payment;
     }
-    this.events?.emit("buyer:changed");
+    this.events.emit("buyer:changed");
   }
 
   getData(): IBuyerData {
@@ -39,23 +39,28 @@ export class Buyer {
   clearData(): void {
     this.payment = null;
     this.address = this.phone = this.email = "";
-    this.events?.emit("buyer:changed");
+    this.events.emit("buyer:changed");
   }
 
   validateData(): IBuyerErrors {
     const errors: IBuyerErrors = {};
+
     if (this.payment === null) {
       errors.payment = "Необходимо выбрать способ оплаты";
     }
-    if (this.address === "") {
+
+    if (!this.address.trim()) {
       errors.address = "Необходимо указать адрес";
     }
-    if (this.phone === "") {
+
+    if (!this.phone.trim()) {
       errors.phone = "Необходимо указать номер телефона";
     }
-    if (this.email === "") {
+
+    if (!this.email.trim()) {
       errors.email = "Необходимо указать адрес электронной почты";
     }
+
     return errors;
   }
 }
