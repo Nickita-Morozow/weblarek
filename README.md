@@ -33,6 +33,27 @@ yarn
 yarn dev
 ```
 
+### Настройка API
+
+Для работы приложения необходимо создать файл `.env` в корне проекта и указать адрес API:
+
+```env
+VITE_API_ORIGIN=https://larek.ffapi.ru
+```
+
+После этого установите зависимости и запустите приложение:
+
+```bash
+npm install
+npm run dev
+```
+
+Для создания production-сборки:
+
+```bash
+npm run build
+```
+
 ## Сборка
 
 ```
