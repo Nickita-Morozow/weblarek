@@ -25,7 +25,7 @@ export interface ICardImage {
   alt: string;
 }
 
-export type CatalogCardData = Omit<IProduct, "image"> & {
+export type CatalogCardData = Pick<IProduct, "title" | "price" | "category"> & {
   image: ICardImage;
 };
 
@@ -78,11 +78,15 @@ export interface ContactsFormData extends FormState {
 export interface SuccessData {
   total: number;
 }
-export type PreviewData = CatalogCardData & {
-  buttonText: string;
-  buttonDisabled: boolean;
+export type PreviewData = CatalogCardData &
+  Pick<IProduct, "description"> & {
+    buttonDisabled: boolean;
+    buttonText: string;
+  };
+
+export type BasketCardData = Pick<IProduct, "title" | "price"> & {
+  index: number;
 };
-export type BasketCardData = IProduct & { index: number };
 
 export interface ModalData {
   content: HTMLElement;

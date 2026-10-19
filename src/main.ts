@@ -59,7 +59,11 @@ function renderBasket(): HTMLElement {
         events.emit("basket:remove", { id: product.id });
       },
     );
-    return card.render({ ...product, index: index + 1 });
+    return card.render({
+      title: product.title,
+      price: product.price,
+      index: index + 1,
+    });
   });
   return basketView.render({
     items,
@@ -105,7 +109,9 @@ events.on("products:changed", () => {
     );
 
     return card.render({
-      ...product,
+      title: product.title,
+      price: product.price,
+      category: product.category,
       image: {
         src: `${CDN_URL}${product.image}`,
         alt: product.title,
@@ -123,7 +129,10 @@ events.on("product:selected", () => {
 
   modal.render({
     content: preview.render({
-      ...product,
+      title: product.title,
+      price: product.price,
+      category: product.category,
+      description: product.description,
       image: {
         src: `${CDN_URL}${product.image}`,
         alt: product.title,
